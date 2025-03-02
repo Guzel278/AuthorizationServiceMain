@@ -9,7 +9,7 @@ public class RabbitMqConnectionManager
 
     public RabbitMqConnectionManager(IConfiguration configuration)
     {
-        var brokerConnection = configuration.GetSection("BrokerConnection").Get<RabbitMq>();
+        var brokerConnection = configuration.GetSection("RabbitMq").Get<RabbitMq>();
         if (brokerConnection == null)
             throw new ArgumentException("Broker connection string is missing");
 
