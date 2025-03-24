@@ -3,7 +3,6 @@ using AuthorizationService.Application.Interfaces;
 using AuthorizationService.Domain.Models;
 using AuthorizationService.Infrastructure.MessageBroker;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthorizationService.API.Controllers
@@ -45,15 +44,24 @@ namespace AuthorizationService.API.Controllers
                 return Conflict(new { error = "User already exists." });
 
             // Создаём объект для отправки в RabbitMQ
-            var notification = new
+            var notification = new NotificationMessage
             {
                 UserId = user.Id,
+                Username = user.Username,
                 Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive,
+                RoleId = user.RoleId,
+                RoleName = roleExist.Name, 
                 Message = "Welcome! Your registration was successful.",
-                Type = "Registration"
+                Type = "authorization"
             };
 
-             _rabbitMqService.Send(notification, "notification_queue"); // Отправляем сообщение
+            // Отправляем в Exchange "user_events"
+            _rabbitMqService.Send(notification, "user_events");
+
+            //_rabbitMqService.Send(notification, "authorization_queue"); 
 
             return CreatedAtAction(nameof(Register), new { userId = user.Id }, new { userId = user.Id });
         }

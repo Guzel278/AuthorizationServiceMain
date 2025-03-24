@@ -20,6 +20,8 @@ namespace AuthorizationService.Application.Services
         public string GenerateJwtToken(User user)
         {
             var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]);
+            var issuer = _configuration["JwtSettings:Issuer"];
+            var audience = _configuration["JwtSettings:Audience"];
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -29,6 +31,8 @@ namespace AuthorizationService.Application.Services
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role.Name)
             }),
+                Issuer = issuer,
+                Audience = audience,
                 Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

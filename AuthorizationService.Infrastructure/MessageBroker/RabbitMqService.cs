@@ -17,28 +17,45 @@ namespace AuthorizationService.Infrastructure.MessageBroker
             _connection = connectionManager.GetConnection();
         }
 
-        public void Send<T>(T message, string queue)
-        {
-            _logger.LogInformation("Sending message of type {0} to queue {1}", typeof(T).Name, queue);
+        //public void Send<T>(T message, string queue)
+        //{
+        //    _logger.LogInformation("Sending message of type {0} to queue {1}", typeof(T).Name, queue);
 
+        //    using var channel = _connection.CreateModel();
+
+        //    channel.QueueDeclare(queue: queue,
+        //                         durable: true,
+        //                         exclusive: false,
+        //                         autoDelete: false,
+        //                         arguments: null);
+
+        //    var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+        //    var properties = channel.CreateBasicProperties();
+        //    properties.Persistent = true;
+
+        //    channel.BasicPublish(exchange: "",
+        //                         routingKey: queue,
+        //                         basicProperties: properties,
+        //                         body: body);
+
+        //    _logger.LogInformation("Message sent to queue {0}: {1}", queue, typeof(T).Name);
+        //}
+
+        //Fanout Exchange
+        public void Send<T>(T message, string exchange)
+        {
             using var channel = _connection.CreateModel();
 
-            channel.QueueDeclare(queue: queue,
-                                 durable: true,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+            channel.ExchangeDeclare(exchange: exchange, type: "fanout");
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
-            var properties = channel.CreateBasicProperties();
-            properties.Persistent = true;
 
-            channel.BasicPublish(exchange: "",
-                                 routingKey: queue,
-                                 basicProperties: properties,
+            channel.BasicPublish(exchange: exchange,
+                                 routingKey: "",
+                                 basicProperties: null,
                                  body: body);
 
-            _logger.LogInformation("Message sent to queue {0}: {1}", queue, typeof(T).Name);
+            _logger.LogInformation("Message sent to exchange: {Exchange}", exchange);
         }
 
         public void Dispose()
